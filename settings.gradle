@@ -1,0 +1,3 @@
+rootProject.name = 'mema-server'
+include 'module-app'
+
