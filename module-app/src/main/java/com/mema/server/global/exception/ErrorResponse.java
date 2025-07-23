@@ -16,7 +16,7 @@ public interface ErrorResponse{
     String path();
     LocalDateTime timestamp();
 
-    public static ErrorResponse of(ErrorCode e, HttpServletRequest req) {
+    public static ErrorResponse from(ErrorCode e, HttpServletRequest req) {
         return new DefaultErrorResponse(
                 e.getCode(),
                 e.getMessage(),

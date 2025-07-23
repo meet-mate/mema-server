@@ -2,7 +2,6 @@ package com.mema.server.global.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -29,7 +28,7 @@ public class GlobalExceptionHandler {
     }
 
     private ResponseEntity<ErrorResponse> build(ErrorCode code, HttpServletRequest req) {
-        return ResponseEntity.status(code.getStatus()).body(ErrorResponse.of(code, req));
+        return ResponseEntity.status(code.getStatus()).body(ErrorResponse.from(code, req));
     }
 
     /** 1. Unhandled Custom Exception */

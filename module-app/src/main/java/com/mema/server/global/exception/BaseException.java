@@ -24,11 +24,11 @@ public abstract class BaseException extends RuntimeException{
         this.errorCode = errorCode;
     }
 
-    public static BaseException of(ErrorCode code) {
+    public static BaseException ofCode(ErrorCode code) {
         return new DefaultBaseException(code, null);
     }
 
-    public static BaseException of(ErrorCode code, String msg) {
+    public static BaseException ofCodeAndMsg(ErrorCode code, String msg) {
         return new DefaultBaseException(code, msg);
     }
 }
