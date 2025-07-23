@@ -11,18 +11,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
-import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 
-
-/**
- * <b>전역 예외 처리기</b>
- *
- * <li>Controller 계층에서 던져진 예외를 JSON 형태로 일관성 있게 반환
- * <li>Validation 예외들을 구분해 필드별 오류 정보 제공
- *
- **/
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -42,9 +32,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(code.getStatus()).body(ErrorResponse.of(code, req));
     }
 
-    /** 1. 도메인(Service) 예외 */
-    @ExceptionHandler(ServiceException.class)
-    public ResponseEntity<ErrorResponse> handleService(ServiceException e, HttpServletRequest req) {
+    /** 1. Unhandled Custom Exception */
+    @ExceptionHandler(BaseException.class)
+    public ResponseEntity<ErrorResponse> handleService(BaseException e, HttpServletRequest req) {
         logEx(req, e);
         return build(e.getErrorCode(), req);
     }
@@ -55,26 +45,15 @@ public class GlobalExceptionHandler {
             MethodArgumentNotValidException ex, HttpServletRequest req) {
         logEx(req, ex);
 
-        List<ErrorResponse.FieldError> fields =
-                ex.getBindingResult().getFieldErrors().stream()
-                        .map(
-                                f ->
-                                        new ErrorResponse.FieldError(
-                                                f.getField(),
-                                                (f.getDefaultMessage() != null) ? f.getDefaultMessage() : "invalid"))
-                        .collect(Collectors.toList());
-
-        ErrorResponse body =
-                ErrorResponse.ofValidation(ErrorCode.VALIDATION_FAILED, req, fields);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+        return build(CommonErrorCode.INVALID_PARAMETER, req);
     }
 
-    /** 3. 파라미터 누락 */
+    /** 3. 파라미터 에러 */
     @ExceptionHandler(MissingRequestValueException.class)
     public ResponseEntity<ErrorResponse> handleMissing(
             MissingRequestValueException ex, HttpServletRequest req) {
         logEx(req, ex);
-        return build(ErrorCode.MISSING_PARAMETER, req);
+        return build(CommonErrorCode.INVALID_PARAMETER, req);
     }
 
     /** 4. HTTP 메서드 오류 */
@@ -82,29 +61,29 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleMethodNotAllowed(
             HttpRequestMethodNotSupportedException ex, HttpServletRequest req) {
         logEx(req, ex);
-        return build(ErrorCode.METHOD_NOT_ALLOWED, req);
+        return build(CommonErrorCode.METHOD_NOT_ALLOWED, req);
     }
 
     /** 5. 리소스 없음 */
-    @ExceptionHandler({NoSuchElementException.class})
+    @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<ErrorResponse> handleNoSuch(
             NoSuchElementException ex, HttpServletRequest req) {
         logEx(req, ex);
-        return build(ErrorCode.NO_SUCH_RESOURCE, req);
+        return build(CommonErrorCode.RESOURCE_NOT_FOUND, req);
     }
 
-    /** 6. 존재하지 않는 API */
+    /** 6. 클라이언트 에러 */
     @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity<ErrorResponse> handleNoHandler(
             NoHandlerFoundException ex, HttpServletRequest req) {
         logEx(req, ex);
-        return build(ErrorCode.API_NOT_FOUND, req);
+        return build(CommonErrorCode.CLIENT_ERROR, req);
     }
 
     /** 7. 예상치 못한 모든 예외 – 500 Fallback */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleUnknown(Exception ex, HttpServletRequest req) {
         logEx(req, ex);
-        return build(ErrorCode.UNKNOWN_ERROR, req);
+        return build(CommonErrorCode.UNKNOWN_ERROR, req);
     }
 }
