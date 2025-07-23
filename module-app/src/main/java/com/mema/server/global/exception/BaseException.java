@@ -14,30 +14,30 @@ public abstract class BaseException extends RuntimeException{
     private final ErrorCode errorCode;
 
 
-    protected BaseException(CommonErrorCode errorCode, String customMsg) {
+    protected BaseException(ErrorCode errorCode, String customMsg) {
         super(customMsg == null ? errorCode.getMessage() : customMsg);
         this.errorCode = errorCode;
     }
 
-    public BaseException(CommonErrorCode errorCode) {
+    public BaseException(ErrorCode errorCode) {
         super(errorCode.getMessage());
         this.errorCode = errorCode;
     }
 
-    public static BaseException of(CommonErrorCode code) {
+    public static BaseException of(ErrorCode code) {
         return new DefaultBaseException(code, null);
     }
 
-    public static BaseException of(CommonErrorCode code, String msg) {
+    public static BaseException of(ErrorCode code, String msg) {
         return new DefaultBaseException(code, msg);
     }
 }
 
 class DefaultBaseException extends BaseException {
-    protected DefaultBaseException(CommonErrorCode errorCode) {
+    protected DefaultBaseException(ErrorCode errorCode) {
         super(errorCode, null);
     }
-    protected DefaultBaseException(CommonErrorCode errorCode, String customMsg) {
+    protected DefaultBaseException(ErrorCode errorCode, String customMsg) {
         super(errorCode, customMsg);
     }
 }
